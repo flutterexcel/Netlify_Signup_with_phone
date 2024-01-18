@@ -17503,10 +17503,8 @@ s.wm()},
 yj:function yj(a){this.d=this.c=""
 this.a=a},
 Pb:function Pb(a){this.a=a},
-Ai:function Ai(a,b){var _=this
-_.e=_.d=null
-_.f=a
-_.a=b},
+Ai:function Ai(a,b){this.f=a
+this.a=b},
 Sy:function Sy(){},
 Sx:function Sx(a,b){this.a=a
 this.b=b},
@@ -50929,10 +50927,7 @@ s=$.a9s()
 s.lp("open",[a,"peLoginWindow","toolbar=0,scrollbars=0,location=0,statusbar=0,menubar=0,resizable=0,width=500,height=560,top="+J.cJ(J.a2H(J.a_D(J.aw(s.j(0,"screen"),"height"),600),2))+",left="+J.cJ(J.a2H(J.a_D(J.aw(s.j(0,"screen"),"width"),500),2))])},
 $S:97}
 A.Sx.prototype={
-$0(){var s=this.a
-s.d="91"
-s.e="9528202921"
-this.b.$1("https://www.phone.email/auth/sign-in?countrycode=91&phone_no=9528202921&redirect_url="+s.f)},
+$0(){this.b.$1("https://www.phone.email/auth/sign-in?countrycode=+91&phone_no=9528202921&redirect_url="+this.a.f)},
 $S:0}
 A.Kc.prototype={
 P8(a,b){var s,r,q=t.yH
