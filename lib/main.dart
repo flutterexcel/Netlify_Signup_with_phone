@@ -3,36 +3,37 @@
 import 'package:flutter/material.dart';
 import 'package:new_practise/emailUi.dart';
 import 'package:shared_preferences/shared_preferences.dart';
- import 'package:url_launcher/url_launcher.dart';
- import 'package:jwt_decoder/jwt_decoder.dart';
- import 'dart:js' as js;
- import 'package:universal_html/html.dart' as html;
+import 'package:jwt_decoder/jwt_decoder.dart';
+import 'dart:js' as js;
+import 'package:universal_html/html.dart' as html;
+import 'dart:developer';
 // build 
 
  void main() {
    runApp(MyApp());
  }
  class MyApp extends StatelessWidget {
+   String jwtPhone='';
+   String? phtoken='';
+
   Future<void> loadData() async {
     
+    
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    await Future.delayed(Duration(seconds: 2));
-   
      Map<String, dynamic> decoded;
      Uri currentUri = Uri.parse(html.window.location.href);
-    
-       Map<String, String> queryParams = currentUri.queryParameters;
+      Map<String, String> queryParams = currentUri.queryParameters;
        
-     String? phtoken = queryParams['phtoken']; 
+     phtoken = queryParams['phtoken']; 
+     log('token${phtoken}');
     
-     prefs.setString('token', phtoken!);
      
      try {
        decoded = JwtDecoder.decode(phtoken!);
        int jwtResponse = 1;
-       String jwtPhone = decoded['country_code'] + decoded['phone_no'];
-      //  print('JWT decoded successfully');
-      //  print('JWT Phone: $jwtPhone');
+       jwtPhone = decoded['country_code'] + decoded['phone_no'];
+       print('JWT decoded successfully');
+       print('JWT Phone: $jwtPhone');
      } catch (e) {
        int jwtResponse = 0;
        String jwtPhone = '';
@@ -43,21 +44,26 @@ import 'package:shared_preferences/shared_preferences.dart';
    @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: Scaffold(
-        // appBar: AppBar(
-        //   title: Text('Stateless Widget Example'),
-        // ),
+      debugShowCheckedModeBanner: false,
+      home: Scaffold(        
         body: FutureBuilder(
           future: loadData(),
           builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.done) {       
+            print(phtoken);
+            if (phtoken==null) {   
+          
               return Center(
                 child: SignInButton(),
               );
-            } else {              
-              return Center(
-                child: DashbordScreen(),
-              );
+          
+            } else if(phtoken!=''){
+              return const Center(
+                child: EmailCounter()
+              ); 
+            }else{
+              return const Center(
+                child: Text('Not logged in')
+              ); 
             }
           },
         ),
@@ -70,6 +76,7 @@ import 'package:shared_preferences/shared_preferences.dart';
    final String api_key = 'BVj4k9UOSCuUoTOSbF0DAg4S335jdnPa'; // Replace with your actual API key
     String? countryCode;
     String? phoneNumber;
+    String? redirectUrl = html.window.location.href;
    @override
    Widget build(BuildContext context) {
    void openPopupWindow(String url) {
@@ -79,35 +86,42 @@ import 'package:shared_preferences/shared_preferences.dart';
      return InkWell(
       
        onTap: () {
-         openPopupWindow('https://www.phone.email/auth/sign-in?countrycode=${countryCode}&phone_no=${phoneNumber}&redirect_url=http://localhost:8080/');
+        countryCode ='91';
+        phoneNumber ='9528202921';
+        String url = 'https://www.phone.email/auth/sign-in?countrycode=+91&phone_no=9528202921&redirect_url=${redirectUrl}';
+         openPopupWindow(url);
+         print(url);
          
        },
        child: Container(
+        height: 50,
+        width: 300,
          decoration: BoxDecoration(
            borderRadius: BorderRadius.circular(3),
            color: Color(0xFF02BD7E),
          ),
          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-         child: const Row(
-           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-           children: [
-             Padding(
-               padding: EdgeInsets.only(right: 5),
-               child: Icon(
-                 Icons.phone,
-                 color: Colors.white,
-               ),
-             ),
-             Text(
-               'Sign in with Phone Number',
-               style: TextStyle(
-                 fontWeight: FontWeight.bold,
-                 fontSize: 16,
-                 color: Colors.white,
-               ),
-             ),
-           ],
-         ),
+         child: const
+       Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.only(right: 5, left: 5),
+                      child: Icon(
+                        Icons.phone,
+                        color: Colors.white,
+                        size: 24,
+                      ),
+                    ),
+                     Text(
+                      'Sign in with Phone',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
        ),
      );
      
@@ -117,34 +131,7 @@ import 'package:shared_preferences/shared_preferences.dart';
     return html.window.location.href;
     
   }
-  
-   Future<void> _signInWithPhoneNumber() async {
-      String url = 'https://www.phone.email/auth/sign-in?countrycode=91&phone_no=9528202921&redirect_url=http://localhost:8080/';
-     try {
-       await launch(url, webOnlyWindowName: 'peLoginWindow',);
-     } catch (e) {
-       print('Error launching URL: $e');
-     }
-     // Simulate JWT validation
-     Map<String, dynamic> decoded;
-     Uri currentUri = Uri.parse(await getCurrentUrl());
-     print(currentUri);
-     print("url ${currentUri}");
-       Map<String, String> queryParams = currentUri.queryParameters;
-       
-     String? phtoken = queryParams['phtoken']; // Replace with your actual JWT token
-     try {
-       decoded = JwtDecoder.decode(phtoken!);
-       int jwtResponse = 1;
-       String jwtPhone = decoded['country_code'] + decoded['phone_no'];
-     
-      
-     } catch (e) {
-       int jwtResponse = 0;
-       String jwtPhone = '';
-       print('Invalid JWT or decoding error: $e');
-     }
-   }
+
  }
 
  

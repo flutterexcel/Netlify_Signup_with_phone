@@ -1,131 +1,156 @@
-// ignore_for_file: prefer_const_constructors, unnecessary_string_interpolations, sort_child_properties_last, unnecessary_null_comparison, prefer_if_null_operators, must_be_immutable
+// ignore_for_file: prefer_const_constructors, sort_child_properties_last, prefer_const_literals_to_create_immutables, deprecated_member_use, unnecessary_brace_in_string_interps
 import 'package:flutter/material.dart';
-import 'package:new_practise/Emailcount.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:new_practise/EmailCountservice.dart';
+// import 'package:phonelogin/EmailcountService.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
+
+import 'package:universal_html/html.dart' as html;
 
 import 'package:shared_preferences/shared_preferences.dart';
-class DashbordScreen extends StatefulWidget {
-  String? phone;
-  String? jwtToken;
-  DashbordScreen({super.key, this.phone, this.jwtToken});
+
+class EmailCounter extends StatefulWidget {
+  const EmailCounter({super.key, this.title});
+  final String? title;
   @override
-  State<DashbordScreen> createState() => _DashbordScreenState();
+  State<EmailCounter> createState() => _EmailCounterState();
 }
-class _DashbordScreenState extends State<DashbordScreen> {
-  EmailCountService emailCountService=EmailCountService();
-  String count = "";
+
+class _EmailCounterState extends State<EmailCounter> {
+  EmailCountService emailCountService = EmailCountService();
+  String count = '';
   @override
   void initState() {
     super.initState();
     getEmailCount();
   }
+
   getEmailCount() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? token = await prefs.getString('token') ?? widget.jwtToken;
+    // String? token = await prefs.getString('token');
     print("token hello token ******* ${prefs.getString('token')}");
+    Uri currentUri = Uri.parse(html.window.location.href);
+    Map<String, String> queryParams = currentUri.queryParameters;
+    Map<String, dynamic> decoded;
+
+    String? token = queryParams['phtoken'];
+    decoded = JwtDecoder.decode(token!);
+    int jwtResponse = 1;
+    String jwtPhone = decoded['country_code'] + decoded['phone_no'];
+    print('ddepak');
+    print(jwtPhone);
     emailCountService.getEmailCount(token!).then((value) {
       print("API valur******* $value ");
-      String count = value.toString();
-      setState(() {});
+      setState(() {
+        count = value;
+      });
+
+      print("count ${count}");
     });
   }
+
+  logout() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.clear();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Color.fromARGB(255, 236, 236, 236),
-        automaticallyImplyLeading: false,
-        title: Text(
-          'Phone.email',
-          style: TextStyle(color: Colors.green),
-        ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 50),
-            child: FittedBox(
-              child: Stack(
-                alignment: Alignment(1.3, -1.0),
-                children: [
-                  FloatingActionButton(
-                    backgroundColor: Colors.transparent,
-                    onPressed: () {},
-                    child: Icon(
-                      Icons.email_outlined,
-                      size: 35.5,
-                    ),
-                  ),
-                  Container(
-                    child: Center(
-                      child: Text('${count == null ? '0' : count}',
-                          style: TextStyle(color: Colors.white)),
-                    ),
-                    padding: EdgeInsets.all(8),
-                    constraints: BoxConstraints(minHeight: 20, minWidth: 20),
-                    decoration: BoxDecoration(
-                      // This controls the shadow
-                      // boxShadow: [
-                      //   BoxShadow(
-                      //       spreadRadius: 1,
-                      //       // blurRadius: 5,
-                      //       //color: Colors.black.withAlpha(50)
-                      //       )
-                      // ],
-                      borderRadius: BorderRadius.circular(16),
-                      color: Colors.red, // This would be color of the Badge
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
       body: Center(
-        child: Container(
-          width: MediaQuery.of(context).size.width * 0.28,
-          height: MediaQuery.of(context).size.height * 0.22,
-          decoration: BoxDecoration(
-            color: Color.fromARGB(255, 192, 199, 147),
-            borderRadius: BorderRadius.circular(3.2),
-          ),
-          child: Center(
-              child: Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Text("You are logged in with"),
-                SizedBox(
-                  height: 15.5,
-                ),
-                Text("${widget.phone ?? 'Number'}"),
-                SizedBox(
-                  height: 15.5,
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    // Add your logout logic here
-                    print('Logout button pressed');
-                  },
-                  style: ElevatedButton.styleFrom(
-                    primary: Colors
-                        .transparent, // Change the background color as needed
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(
-                          20.0), // Adjust the border radius
-                    ),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Text(
-                      'Logout',
-                      style: TextStyle(
-                          fontSize: 18.0), // Adjust the font size as needed
-                    ),
-                  ),
-                ),
-              ],
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Center(
+        child: Stack(
+          alignment: Alignment.topRight,
+          children: [
+            // Shopping bag icon
+            Icon(
+              Icons.email,
+              size: 100,
+              color: Colors.black,
             ),
-          )),
+            // Dot with counter
+           Positioned(
+                    right: 5,
+                    top: 5,
+                    child: Container(
+                      padding: EdgeInsets.all(5),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.red,
+                      ),
+                      child: Text(
+                        '${count}',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  )
+                
+          ],
+        ),
+      ),
+            SizedBox(
+              height: 9.9,
+            ),
+            Container(
+              height: 180,
+              width: 300,
+              color: Color.fromARGB(255, 255, 236, 181),
+              child: Padding(
+                padding: const EdgeInsets.only(
+                    top: 37.5, left: 45.0, right: 21.0, bottom: 25.2),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Your are now Logged In with",
+                      style: TextStyle(
+                          fontSize: 16.2, fontWeight: FontWeight.w600),
+                    ),
+                    SizedBox(
+                      height: 15.2,
+                    ),
+                    Text("+919528202921"),
+                    SizedBox(
+                      height: 15.5,
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        logout();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        primary: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(0.0),
+                          side: BorderSide(
+                              color: Color.fromARGB(
+                                  255, 48, 48, 48)), // Set border color
+                        ),
+                        fixedSize: Size(130, 35),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 4.2, bottom: 4.2),
+                        child: Center(
+                          child: Text(
+                            'Logout',
+                            style: TextStyle(
+                                fontSize: 16,
+                                color: Color.fromARGB(255, 62, 62, 62)),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          ],
         ),
       ),
     );
